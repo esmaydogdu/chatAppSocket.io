@@ -14,13 +14,22 @@ io.on('connection', (socket) => {
       });
     socket.on('chat message', (msg)=>{
         //use io.emit if you want to send msg to everyone
-        //io.emit('chat message', msg);
+        io.emit('chat message', msg);
 
         //use broadcast.emit if you want to send everyone except the emitter
-        socket.broadcast.emit('chat message', msg);
+        //socket.broadcast.emit('chat message', msg);
     })
   });
 
 http.listen(3000, () => {
   console.log('listening on *:3000');
 });
+
+
+// homework
+// Broadcast a message to connected users when someone connects or disconnects.
+// Add support for nicknames.
+// Don’t send the same message to the user that sent it. Instead, append the message directly as soon as he/she presses enter.
+// Add “{user} is typing” functionality.
+// Show who’s online.
+// Add private messaging.
