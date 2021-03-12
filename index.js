@@ -1,7 +1,9 @@
+const { Socket } = require("dgram");
+
 const app = require("express")();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
-
+var nextroundCount = 0;
 //when there is a get request on root directory, call index.html
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
@@ -9,23 +11,19 @@ app.get("/", (req, res) => {
 
 //connection, disconnect anlamlı kelimeler mi?
 io.on("connection", (socket) => {
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-    io.emit("disconnect-user", socket.id);
-  });
-  socket.on("chat message", (msg) => {
-    //use io.emit if you want to send msg to everyone
-    //io.emit("chat message", msg);
+  // socket.on("disconnect", () => {
+  //   console.log("user disconnected");
+  //   io.emit("disconnect-user", socket.id);
+  // });
 
-    //use broadcast.emit if you want to send everyone except the emitter
-    socket.broadcast.emit("chat message", msg);
-  });
-  socket.on("typing", () => {
-    socket.broadcast.emit("typing", socket.id);
-  });
-  socket.on("typed", () => {
-    socket.broadcast.emit("typed", socket.id);
-  });
+  socket.on("next-round", ()=>{
+    nextroundCount ++;
+    io.emit("next-round", nextroundCount);
+    //socket.emit
+  })
+  socket.on("smiled", ()=>{
+    socket.broadcast.emit("smiled", socket.id)
+  })
 });
 
 http.listen(3000, () => {
