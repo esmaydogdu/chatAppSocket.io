@@ -1,160 +1,160 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <title>Yanny-Workaround</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 60px 0;
+      }
 
-<head>
-  <title>Yanny-Workaround</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-        Helvetica, Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      margin: 60px 0;
-    }
+      #form {
+        background: rgba(0, 0, 0, 0.15);
+        padding: 0.25rem;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        height: 3rem;
+        box-sizing: border-box;
+        backdrop-filter: blur(10px);
+      }
 
-    #form {
-      background: rgba(0, 0, 0, 0.15);
-      padding: 0.25rem;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      display: flex;
-      height: 3rem;
-      box-sizing: border-box;
-      backdrop-filter: blur(10px);
-    }
+      #input {
+        border: none;
+        padding: 0 1rem;
+        flex-grow: 1;
+        border-radius: 2rem;
+        margin: 0.25rem;
+      }
 
-    #input {
-      border: none;
-      padding: 0 1rem;
-      flex-grow: 1;
-      border-radius: 2rem;
-      margin: 0.25rem;
-    }
+      #input:focus {
+        outline: none;
+      }
 
-    #input:focus {
-      outline: none;
-    }
+      #form > button {
+        background: #333;
+        border: none;
+        padding: 0 1rem;
+        margin: 0.25rem;
+        border-radius: 3px;
+        outline: none;
+        color: #fff;
+      }
 
-    #form>button {
-      background: #333;
-      border: none;
-      padding: 0 1rem;
-      margin: 0.25rem;
-      border-radius: 3px;
-      outline: none;
-      color: #fff;
-    }
+      #messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
 
-    #messages {
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-    }
+      #messages > li {
+        padding: 0.5rem 1rem;
+      }
 
-    #messages>li {
-      padding: 0.5rem 1rem;
-    }
+      #messages > li:nth-child(odd) {
+        background: #efefef;
+      }
 
-    #messages>li:nth-child(odd) {
-      background: #efefef;
-    }
+      .btn {
+        margin: 20px 0;
+        padding: 25px 75px;
+        border: none;
+        font-size: 2rem;
+        border-radius: 4px;
+        transition: 0.3s all ease;
+      }
 
-    .btn {
-      margin: 20px 0;
-      padding: 25px 75px;
-      border: none;
-      font-size: 2rem;
-      border-radius: 4px;
-      transition: 0.3s all ease;
-    }
+      .btn:is(:hover, :focus, :active) {
+        outline: none;
+      }
 
-    .btn:is(:hover, :focus, :active) {
-      outline: none;
-    }
+      .btn#smiled-btn {
+        background: #17a2b8;
+        color: #fff;
+      }
 
-    .btn#smiled-btn {
-      background: #17a2b8;
-      color: #fff;
-    }
+      .btn#smiled-btn:is(:hover, :active) {
+        background: #138496;
+      }
 
-    .btn#smiled-btn:is(:hover, :active) {
-      background: #138496;
-      ;
-    }
+      .btn#nextround-btn:is(:hover, :active) {
+        background: #218838;
+      }
 
-    .btn#nextround-btn:is(:hover, :active) {
-      background: #218838;
-      ;
-    }
+      .btn#nextround-btn {
+        background: #28a745;
+        color: #fff;
+      }
 
-    .btn#nextround-btn {
-      background: #28a745;
-      color: #fff;
-    }
+      #round-info {
+        color: #17a2b8;
+        font-size: 3rem;
+        margin: 15px 0;
+      }
 
-    #round-info {
-      color: #17a2b8;
-      font-size: 3rem;
-      margin: 15px 0;
-    }
+      #smiled-info {
+        margin-bottom: 30px;
+        font-size: 1.5rem;
+      }
+    </style>
+  </head>
 
-    #smiled-info {
-      margin-bottom: 30px;
-      font-size: 1.5rem;
-    }
-  </style>
-</head>
+  <body>
+    <div>
+      <input id="room" type="text" />
+    </div>
+    <div id="round-info"></div>
+    <div id="smiled-info"></div>
+    <button id="smiled-btn" class="btn">I SMILED</button>
+    <button id="nextround-btn" class="btn">NEXT ROUND</button>
+    <ul id="messages"></ul>
+    <form id="form" action="">
+      <input id="input" autocomplete="off" /><button>Send</button>
+    </form>
 
-<body>
-  <div id="round-info"></div>
-  <div id="smiled-info"></div>
-  <button id="smiled-btn" class="btn">I SMILED</button>
-  <button id="nextround-btn" class="btn">NEXT ROUND</button>
-  <ul id="messages"></ul>
-  <form id="form" action="">
-    <input id="input" autocomplete="off" /><button>Send</button>
-  </form>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
 
+      var form = document.getElementById("form");
+      var input = document.getElementById("input");
+      var messages = document.getElementById("messages");
+      var roundInfo = document.getElementById("round-info");
+      var smiledInfo = document.getElementById("smiled-info");
+      var smiledBtn = document.getElementById("smiled-btn");
+      var nextroundBtn = document.getElementById("nextround-btn");
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    var socket = io();
+      var user = prompt("Please enter user name");
+      var room = prompt("Please enter room name");
 
-    var form = document.getElementById("form");
-    var input = document.getElementById("input");
-    var messages = document.getElementById("messages");
-    var roundInfo = document.getElementById("round-info");
-    var smiledInfo = document.getElementById("smiled-info");
-    var smiledBtn = document.getElementById("smiled-btn");
-    var nextroundBtn = document.getElementById("nextround-btn");
+      socket.emit("join room", { room, user });
 
-
-    nextroundBtn.addEventListener("click", () => {
-      socket.emit("next-round");
-    })
-    socket.on("next-round", (nextroundCount) => {
-      roundInfo.innerText = `ROUND ${nextroundCount}`;
-    })
-    smiledBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      socket.emit("smiled");
-    })
-    socket.on("next-round", (nextroundCount) => {
-      roundInfo.innerText = `ROUND ${nextroundCount}`;
-    })
-    socket.on("smiled", (id) => {
-      smiledInfo.innerText = `${id} has smiled!`;
-      setTimeout(() => {
-        smiledInfo.innerText = '';
-      }, 2000)
-    })
-
-   
-  </script>
-</body>
-
+      nextroundBtn.addEventListener("click", () => {
+        socket.emit("next-round");
+      });
+      socket.on("next-round", (nextroundCount) => {
+        roundInfo.innerText = `ROUND ${nextroundCount}`;
+      });
+      smiledBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        socket.emit("smiled");
+      });
+      socket.on("next-round", (nextroundCount) => {
+        roundInfo.innerText = `ROUND ${nextroundCount}`;
+      });
+      socket.on("smiled", (id) => {
+        smiledInfo.innerText = `${id} has smiled!`;
+        setTimeout(() => {
+          smiledInfo.innerText = "";
+        }, 2000);
+      });
+    </script>
+  </body>
 </html>

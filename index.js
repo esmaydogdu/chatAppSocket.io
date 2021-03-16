@@ -8,7 +8,8 @@ var nextroundCount = 0;
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
-
+const db = {};
+const rooms = {};
 //connection, disconnect anlamlı kelimeler mi?
 io.on("connection", (socket) => {
   // socket.on("disconnect", () => {
@@ -16,24 +17,35 @@ io.on("connection", (socket) => {
   //   io.emit("disconnect-user", socket.id);
   // });
 
-  socket.on("next-round", ()=>{
-    nextroundCount ++;
-    io.emit("next-round", nextroundCount);
-    //socket.emit
-  })
-  socket.on("smiled", ()=>{
-    socket.broadcast.emit("smiled", socket.id)
-  })
+  socket.on("join room", (payload) => {
+    if (!rooms[payload.room]) {
+      rooms[payload.room] = { host: socket.id, counter: 0 };
+      console.log("rooms", rooms);
+    }
+    socket.join(payload.room);
+    db[socket.id] = payload;
+    console.log(db);
+  });
+
+  socket.on("next-round", () => {
+    const currentUserData = db[socket.id];
+    const currentRoom = rooms[currentUserData.room];
+
+    if (currentRoom.host === socket.id) {
+      currentRoom.counter++;
+      io.to(currentUserData.room).emit("next-round", currentRoom.counter);
+    }
+  });
+
+  socket.on("smiled", () => {
+    const currentUserData = db[socket.id];
+    socket.to(currentUserData.room).emit("smiled", currentUserData.user);
+  });
 });
 
 http.listen(3000, () => {
   console.log("listening on *:3000");
 });
 
-// homework
-// Broadcast a message to connected users when someone connects or disconnects.
-// Add support for nicknames.
-// Don’t send the same message to the user that sent it. Instead, append the message directly as soon as he/she presses enter.
-// Add “{user} is typing” functionality.
-// Show who’s online.
-// Add private messaging.
+//join or create room input
+//read that instead of prompt
